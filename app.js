@@ -72,7 +72,7 @@
   async function getTab(key) {
     const tab = CFG.tab && CFG.tab[key];
     if (CFG.sheetId && tab) {
-      try { return await fetchText(`https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`); }
+      try { const t = await fetchText(`https://docs.google.com/spreadsheets/d/${CFG.sheetId}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`); if (/^\s*</.test(t)) throw new Error('Sheet chưa mở quyền xem'); return t; }
       catch (e) { console.warn('Không đọc được tab', tab, e); toast('Chưa đọc được Google Sheets, đang dùng dữ liệu mẫu.'); }
     }
     try { return await fetchText(LOCAL[key]); } catch (e) { return ''; }
@@ -80,9 +80,24 @@
 
   /* ---------- Xử lý sản phẩm ---------- */
   const CATS = [
-    { id: 'VD', name: 'Váy dài & dạ hội' }, { id: 'VN', name: 'Váy ngắn' }, { id: 'AD', name: 'Áo dài' },
-    { id: 'AY', name: 'Yếm' }, { id: 'AK', name: 'Áo khoác' }, { id: 'PK', name: 'Phụ kiện' }
+    { id: 'vay-dai', name: 'Váy dài & dạ hội', pre: ['VD'] }, { id: 'vay-ngan', name: 'Váy ngắn', pre: ['VN'] },
+    { id: 'ao-dai-yem', name: 'Áo dài & yếm', pre: ['AD', 'AY'] }, { id: 'ao-khoac', name: 'Áo khoác', pre: ['AK'] },
+    { id: 'tui-giay', name: 'Túi xách & Giầy', pre: ['TX', 'GI', 'GD'], acc: true }, { id: 'trang-suc', name: 'Trang sức', pre: ['KT', 'DC', 'VT', 'TS'], acc: true },
+    { id: 'phu-kien-toc', name: 'Phụ kiện tóc', pre: ['PT'], acc: true }
   ];
+  const prefix = (code) => (code.match(/^[A-Za-z]+/) || [''])[0].toUpperCase();
+  const COLORS = [['trang', 'Trắng / Kem', '#fdf8ee'], ['be', 'Be / Vàng / Nâu', 'linear-gradient(135deg,#e8d3b8 33%,#d9bd62 33% 66%,#7b5a3c 66%)'], ['den', 'Đen', '#1d1d1d'], ['do', 'Đỏ', '#b3202a'], ['hong', 'Hồng', '#e9a9bb'], ['xanh', 'Xanh', '#8fb8c8'], ['ghi', 'Ghi', '#9b9b9b'], ['khac', 'Màu khác', 'conic-gradient(#7a5a9a,#e08a3c,#8fb8a0,#7a5a9a)']];
+  const COLOR_WORDS = { trang: 'trang', kem: 'trang', be: 'be', nude: 'be', vang: 'be', nau: 'be', den: 'den', do: 'do', hong: 'hong', xanh: 'xanh', ghi: 'ghi', xam: 'ghi', bac: 'ghi' };
+  // Ô màu có thể ghi nhiều màu, cách nhau dấu phẩy: "Hồng, Xanh"
+  const colorGroups = (c) => String(c || '').split(/[,\/;+&]+/).filter((x) => x.trim()).map((part) => { const w = words(part).map(norm).find((x) => COLOR_WORDS[x]); return w ? COLOR_WORDS[w] : 'khac'; });
+  const SIZES = [['S', ['S']], ['M', ['M']], ['L', ['L']], ['Bigsize', ['XL', 'XXL', 'XXXL', '2XL', '3XL', 'BIGSIZE']], ['Freesize', ['FS', 'FREESIZE', 'F']]];
+  const PRICES = [['1', 'Dưới 200', (p) => p < 200000], ['2', '200 – 300', (p) => p >= 200000 && p < 300000], ['3', '300 – 400', (p) => p >= 300000 && p <= 400000], ['4', 'Trên 400', (p) => p > 400000]];
+  function accCat(code, group) {
+    const g = norm(group);
+    if (g) return /tui|giay|giep|guoc/.test(g) ? 'tui-giay' : /toc/.test(g) ? 'phu-kien-toc' : 'trang-suc';
+    const c = CATS.find((x) => x.acc && x.pre.includes(prefix(code)));
+    return c ? c.id : 'trang-suc';
+  }
   const BRAND_TOKENS = (CFG.anHang || []).map((b) => words(b).map(norm)).filter((t) => t.length).sort((a, b) => b.length - a.length);
   const SIZE_WORDS = new Set(['s', 'm', 'l', 'xl', 'xxl', 'fs']);
   function cleanName(name) {
@@ -97,13 +112,11 @@
     let s = keep.join(' ').replace(/(áo dài)\s+áo dài/i, '$1').replace(/\s{2,}/g, ' ').trim();
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
-  const COLOR_MAP = [['den', 'Đen'], ['trang', 'Trắng'], ['nude', 'Nude / Kem'], ['cat', 'Nude / Kem'], ['be', 'Nude / Kem'], ['kem', 'Nude / Kem'], ['do', 'Đỏ'], ['hong', 'Hồng'], ['xanh', 'Xanh'], ['mint', 'Xanh'], ['vang', 'Vàng'], ['tim', 'Tím'], ['cam', 'Cam'], ['nau', 'Nâu'], ['ghi', 'Xám'], ['xam', 'Xám'], ['bac', 'Xám'], ['dong', 'Vàng']];
-  const COLOR_HEX = { 'Đen': '#1d1d1d', 'Trắng': '#ffffff', 'Nude / Kem': '#e8d3b8', 'Đỏ': '#b3202a', 'Hồng': '#e9a9bb', 'Xanh': '#8fb8a0', 'Vàng': '#d9bd62', 'Tím': '#7a5a9a', 'Cam': '#ab5c14', 'Nâu': '#7b5a3c', 'Xám': '#9b9b9b' };
+  const COLOR_MAP = [['den', 'Đen'], ['trang', 'Trắng'], ['nude', 'Nude'], ['be', 'Be'], ['kem', 'Kem'], ['do', 'Đỏ'], ['hong', 'Hồng'], ['xanh', 'Xanh'], ['mint', 'Xanh'], ['vang', 'Vàng'], ['tim', 'Tím'], ['cam', 'Cam'], ['nau', 'Nâu'], ['ghi', 'Ghi'], ['xam', 'Ghi'], ['bac', 'Ghi']];
   function guessColor(name) {
     for (const t of words(name).slice(1).map(norm)) { const hit = COLOR_MAP.find((c) => c[0] === t); if (hit) return hit[1]; }
     return '';
-  }
-  function parseRange(s) {
+  }  function parseRange(s) {
     const m = String(s || '').trim().match(/^(\d{2,3})(?:\s*-\s*(\d{2,3}))?$/);
     return m ? [+m[1], +(m[2] || m[1])] : null;
   }
@@ -114,7 +127,7 @@
     return { nguc: r[0], eo: r[1], mong: r[2] };
   }
   const baseCode = (c) => c.replace(/\.\d+$/, '');
-  const catOf = (code) => { const p = (code.match(/^[A-Za-z]+/) || [''])[0].toUpperCase(); return CATS.find((c) => c.id === p) ? p : 'VD'; };
+  const catOf = (code) => { const c = CATS.find((x) => !x.acc && x.pre.includes(prefix(code))); return c ? c.id : 'vay-dai'; };
 
   let products = [], bookings = {}, imgMap = {}, feedback = [];
 
@@ -145,10 +158,11 @@
     });
     pk.forEach((o) => {
       const code = o.masp || o.masanpham; if (!code) return;
+      if (/^(khong|no|an|0|false)$/.test(norm(o.hienthi))) return;
       const id = baseCode(code);
       const qty = +o.soluong || 1;
-      by.set(id, { id, cat: 'PK', raw: o.tensanpham, name: o.tenhienthi || o.tensanpham || id, sizes: [], variants: [{ code, size: '' }], p24: priceNum(o.giatien), p48: null,
-        deposit: null, meas: {}, length: null, desc: qty > 1 ? 'Có ' + qty + ' cái' : '', note: '', color: '', imgs: [], accessory: true });
+      by.set(id, { id, cat: accCat(id, o.nhom || ''), raw: o.tensanpham, name: o.tenhienthi || o.tensanpham || id, sizes: [], variants: [{ code, size: '' }], p24: priceNum(o.giatien), p48: null,
+        deposit: null, meas: {}, length: null, desc: qty > 1 ? 'Có ' + qty + ' cái' : '', note: '', color: '', imgs: (o.anhweb || '').split('|').map(fixImg).filter(Boolean), accessory: true });
     });
     products = [...by.values()];
     products.forEach((p) => { if (imgMap[p.id]) p.imgs = imgMap[p.id].concat(p.imgs); });
@@ -201,31 +215,42 @@
   }
 
   /* ---------- Bộ lọc & danh sách ---------- */
-  const F = { cat: '', from: null, to: null, sizes: new Set(), colors: new Set(), price: '', q: '', onlyFit: false };
+  const F = { cat: '', from: null, to: null, sizes: new Set(), colors: new Set(), prices: new Set(), q: '' };
   const isBusyDay = (id, n) => (bookings[id] || []).some(([a, b]) => n >= a && n <= b);
   const isBusyRange = (id, a, b) => (bookings[id] || []).some(([x, y]) => a <= y && b >= x);
   const rangeNow = () => (F.from != null ? [F.from, F.to != null && F.to >= F.from ? F.to : F.from] : null);
 
+  const catById = (id) => CATS.find((c) => c.id === id);
+  const inCat = (id) => products.filter((p) => p.cat === id);
+  function buildMenu() {
+    $('menuGrid').innerHTML = CATS.map((c) => {
+      const list = inCat(c.id), pick = list.find((p) => p.id === (CFG.anhMenu || {})[c.id]) || list.find((p) => p.imgs.length);
+      const art = pick && pick.imgs[0] ? `<img src="${esc(pick.imgs[0])}" alt="" loading="lazy">` : '<span class="m-empty"><svg><use href="#flw"/></svg></span>';
+      return `<a class="m-card" href="#bo-suu-tap/${c.id}"><span class="m-img">${art}</span><b>${c.name}</b><small>${list.length ? list.length + ' mẫu' : 'Đang cập nhật'}</small></a>`;
+    }).join('');
+  }
   function buildCats() {
-    const cnt = (id) => products.filter((p) => p.cat === id).length;
-    $('cats').innerHTML = `<button class="cat" role="tab" aria-selected="${!F.cat}" data-cat="">Tất cả<small>${products.length}</small></button>` +
-      CATS.filter((c) => cnt(c.id)).map((c) => `<button class="cat" role="tab" aria-selected="${F.cat === c.id}" data-cat="${c.id}">${c.name}<small>${cnt(c.id)}</small></button>`).join('');
+    $('cats').innerHTML = `<a class="cat" aria-current="${!F.cat}" href="#bo-suu-tap">Tất cả</a>` +
+      CATS.map((c) => `<a class="cat" aria-current="${F.cat === c.id}" href="#bo-suu-tap/${c.id}">${c.name}</a>`).join('');
+    const on = $('cats').querySelector('[aria-current=true]'); if (on) $('cats').scrollLeft = on.offsetLeft - $('cats').offsetLeft - 40;
+    const c = catById(F.cat);
+    $('shopTitle').textContent = c ? c.name : 'Tất cả mẫu';
+    $('gSize').hidden = $('gColor').hidden = !!(c && c.acc);
+    if (c && c.acc) { F.sizes.clear(); F.colors.clear(); document.querySelectorAll('#fSize .chip,#fColor .chip').forEach((x) => x.setAttribute('aria-pressed', 'false')); }
   }
   function buildChips() {
-    const sizes = ['S', 'M', 'L', 'XL', 'XXL', 'FS'].filter((s) => products.some((p) => p.sizes.includes(s)));
-    $('fSize').innerHTML = sizes.map((s) => `<button type="button" class="chip" aria-pressed="false" data-size="${s}">${s}</button>`).join('');
-    const cols = [...new Set(products.map((p) => p.color).filter(Boolean))];
-    $('fColor').innerHTML = cols.map((c) => `<button type="button" class="chip" aria-pressed="false" data-color="${esc(c)}"><i class="sw" style="background:${COLOR_HEX[c] || '#cbbf9c'}"></i>${esc(c)}</button>`).join('');
+    $('fSize').innerHTML = SIZES.map(([n]) => `<button type="button" class="chip" aria-pressed="false" data-v="${n}">${n}</button>`).join('');
+    $('fColor').innerHTML = COLORS.map(([id, n, bg]) => `<button type="button" class="chip" aria-pressed="false" data-v="${id}"><i class="sw" style="background:${bg}"></i>${n}</button>`).join('');
+    $('fPrice').innerHTML = PRICES.map(([id, n]) => `<button type="button" class="chip" aria-pressed="false" data-v="${id}">${n}</button>`).join('');
   }
   function matches(p) {
     if (F.cat && p.cat !== F.cat) return false;
-    if (F.sizes.size && p.sizes.length && !p.sizes.some((s) => F.sizes.has(s))) return false;
-    if (F.colors.size && !F.colors.has(p.color)) return false;
-    if (F.price && p.p24 != null) { const [lo, hi] = F.price.split('-').map((x) => +x * 1000); if (p.p24 < lo || p.p24 >= hi) return false; }
+    if (F.sizes.size && !SIZES.some(([n, list]) => F.sizes.has(n) && p.sizes.some((s) => list.includes(s)))) return false;
+    if (F.colors.size && !colorGroups(p.color).some((g) => F.colors.has(g))) return false;
+    if (F.prices.size && !(p.p24 != null && PRICES.some(([id, , ok]) => F.prices.has(id) && ok(p.p24)))) return false;
     if (F.q && !norm([p.name, p.id, p.color, p.desc].join(' ')).includes(norm(F.q))) return false;
     return true;
-  }
-  const FIT_BADGE = { ok: ['fit-ok', 'Có thể vừa'], mid: ['fit-mid', 'Cân nhắc'], no: ['fit-no', 'Dễ chật'] };
+  }  const FIT_BADGE = { ok: ['fit-ok', 'Có thể vừa'], mid: ['fit-mid', 'Cân nhắc'], no: ['fit-no', 'Dễ chật'] };
 
   function renderGrid() {
     const r = rangeNow();
@@ -234,6 +259,8 @@
     const free = list.filter((x) => !x.busy).length;
     $('resultLine').textContent = r ? `${free} mẫu còn trống ngày ${fmtDay(r[0])}${r[1] !== r[0] ? ' → ' + fmtDay(r[1]) : ''} (tổng ${list.length} mẫu phù hợp)` : `${list.length} mẫu`;
     $('empty').hidden = list.length > 0;
+    const cc = catById(F.cat);
+    $('empty').textContent = cc && !inCat(cc.id).length ? 'Mẫu đang được cập nhật, Nàng nhắn Aurelia để xem tại cửa hàng\u00a0nhé.' : 'Chưa có mẫu phù hợp. Nàng thử đổi ngày hoặc bớt bộ lọc\u00a0nhé.';
     $('grid').innerHTML = list.map(({ p, busy, fit }) => {
       const img = p.imgs[0];
       const badge = r ? `<span class="badge${busy ? ' busy' : ''}">${busy ? 'Đã có người thuê' : 'Còn trống'}</span>` : (fit && FIT_BADGE[fit.level] ? `<span class="badge ${FIT_BADGE[fit.level][0]}">${FIT_BADGE[fit.level][1]}</span>` : '');
@@ -247,16 +274,13 @@
   }
 
   function bindFilters() {
-    $('cats').addEventListener('click', (e) => { const b = e.target.closest('[data-cat]'); if (!b) return; F.cat = b.dataset.cat; buildCats(); renderGrid(); });
-    $('fSize').addEventListener('click', (e) => { const b = e.target.closest('[data-size]'); if (!b) return; const s = b.dataset.size; F.sizes.has(s) ? F.sizes.delete(s) : F.sizes.add(s); b.setAttribute('aria-pressed', F.sizes.has(s)); renderGrid(); });
-    $('fColor').addEventListener('click', (e) => { const b = e.target.closest('[data-color]'); if (!b) return; const s = b.dataset.color; F.colors.has(s) ? F.colors.delete(s) : F.colors.add(s); b.setAttribute('aria-pressed', F.colors.has(s)); renderGrid(); });
+    [['fSize', F.sizes], ['fColor', F.colors], ['fPrice', F.prices]].forEach(([box, set]) => $(box).addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v; set.has(v) ? set.delete(v) : set.add(v); b.setAttribute('aria-pressed', set.has(v)); renderGrid(); }));
     $('fFrom').addEventListener('change', (e) => { F.from = inputToNum(e.target.value); if (F.from != null && F.to != null && F.to < F.from) { F.to = null; $('fTo').value = ''; } $('fTo').min = e.target.value; renderGrid(); });
     $('fTo').addEventListener('change', (e) => { F.to = inputToNum(e.target.value); renderGrid(); });
-    $('fPrice').addEventListener('change', (e) => { F.price = e.target.value; renderGrid(); });
     $('fQ').addEventListener('input', (e) => { F.q = e.target.value.trim(); renderGrid(); });
     $('fReset').addEventListener('click', () => {
-      F.cat = ''; F.from = F.to = null; F.sizes.clear(); F.colors.clear(); F.price = ''; F.q = '';
-      ['fFrom', 'fTo', 'fQ'].forEach((i) => ($(i).value = '')); $('fPrice').value = '';
+      F.from = F.to = null; F.sizes.clear(); F.colors.clear(); F.prices.clear(); F.q = '';
+      ['fFrom', 'fTo', 'fQ'].forEach((i) => ($(i).value = ''));
       document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', 'false')); buildCats(); renderGrid();
     });
     $('fFrom').min = $('fTo').min = new Date().toISOString().slice(0, 10);
@@ -282,7 +306,7 @@
       const me = measureText('').trim(); if (me) lines.push(me);
       if (v('bNote')) lines.push('Lời nhắn: ' + v('bNote'));
       lines.push('Nhờ Aurelia xác nhận lịch giúp mình nhé!');
-      contact('messenger', lines.join('\n'));
+      contact(lines.join('\n'));
     });
   }
   function measureText(prefix) {
@@ -292,11 +316,17 @@
 
   /* ---------- Liên hệ ---------- */
   const phone = () => String(CFG.hotline || '').replace(/\D/g, '');
-  const zaloUrl = () => 'https://zalo.me/' + phone();
-  function contact(kind, text) {
-    if (text) { try { navigator.clipboard && navigator.clipboard.writeText(text); } catch (e) {} toast('Đã chép tin nhắn. Dán vào ' + (kind === 'zalo' ? 'Zalo' : 'Messenger') + ' rồi gửi cho Aurelia nhé!'); }
-    window.open(kind === 'zalo' ? zaloUrl() : CFG.messenger, '_blank', 'noopener');
+  const msgUrl = (text) => CFG.messenger + '?text=' + encodeURIComponent(text.slice(0, 600));
+  function contact(text) {
+    $('msgText').value = text; $('msgGo').href = msgUrl(text);
+    if (!$('msgDlg').open) $('msgDlg').showModal();
   }
+  $('msgText').addEventListener('input', (e) => { $('msgGo').href = msgUrl(e.target.value); });
+  $('msgGo').addEventListener('click', () => {
+    const t = $('msgText').value; try { navigator.clipboard.writeText(t).catch(() => {}); } catch (e) {}
+    toast('Đã chép tin nhắn. Dán vào Messenger rồi gửi cho Aurelia nhé!');
+  });
+  $('msgClose').addEventListener('click', () => $('msgDlg').close());
   function fillContact() {
     const p = phone(), pretty = p.replace(/^(\d{4})(\d{3})(\d{3})$/, '$1.$2.$3');
     $('topMsg').href = CFG.messenger;
@@ -343,7 +373,7 @@
     ME[k] = +e.target.value || null;
     const g = { h: 'mH', w: 'mW', b: 'mB', wa: 'mWa', hi: 'mHi' }[k]; $(g).value = e.target.value;
   }));
-  $('ddAsk').addEventListener('click', () => contact('messenger', measureText(`Chào Aurelia, mình muốn gặp nhân viên tư vấn size váy "${cur.name}" (mã ${cur.id}).`)));
+  $('ddAsk').addEventListener('click', () => contact(measureText(`Chào Aurelia, mình muốn gặp nhân viên tư vấn size váy "${cur.name}" (mã ${cur.id}).`)));
 
   function renderCal() {
     const first = new Date(Date.UTC(calY, calM, 1)); const lead = (first.getUTCDay() + 6) % 7;
@@ -365,7 +395,7 @@
     const s = $('calStatus'); s.className = 'cal-status';
     if (selA == null) { s.textContent = 'Bấm ngày nhận, rồi bấm ngày trả.'; return; }
     const b = selB != null ? selB : selA;
-    if (isBusyRange(cur.id, selA, b)) { s.textContent = 'Khoảng ngày này đã có người thuê. Bạn chọn ngày khác nhé.'; s.classList.add('bad'); return; }
+    if (isBusyRange(cur.id, selA, b)) { s.textContent = 'Khoảng ngày này đã có người thuê. Nàng chọn ngày khác nhé.'; s.classList.add('bad'); return; }
     s.textContent = `Còn trống: ${fmtDay(selA)}${b !== selA ? ' → ' + fmtDay(b) : ''}. Bấm "Nhắn Messenger" để giữ váy!`; s.classList.add('ok');
   }
   $('calGrid').addEventListener('click', (e) => {
@@ -383,30 +413,44 @@
     return measureText(t + '.') + ' Nhờ shop kiểm tra giúp mình nhé!';
   }
   $('ddBook').addEventListener('click', () => $('dressDlg').close());
-  $('ddMsg').addEventListener('click', () => contact('messenger', bookingText(cur, selA, selB)));
+  $('ddMsg').addEventListener('click', () => contact(bookingText(cur, selA, selB)));
   $('lightClose').addEventListener('click', () => $('lightDlg').close());
-  ['dressDlg', 'lightDlg'].forEach((i) => $(i).addEventListener('click', (e) => { if (e.target === $(i)) $(i).close(); }));
+  ['dressDlg', 'lightDlg', 'msgDlg'].forEach((i) => $(i).addEventListener('click', (e) => { if (e.target === $(i)) $(i).close(); }));
 
   /* ---------- Feedback ---------- */
+  let fbShown = 0, fbPhotos = [];
+  const fbImg = (u) => `<img src="${esc(u)}" alt="Khách mặc trang phục Aurelia" loading="lazy" data-light="${esc(u)}">`;
+  function moreFeedback() {
+    const next = fbPhotos.slice(fbShown, fbShown + 36); fbShown += next.length;
+    $('fbGrid').insertAdjacentHTML('beforeend', next.map(fbImg).join(''));
+    $('fbMore').hidden = fbShown >= fbPhotos.length;
+    $('fbMore').textContent = `Xem thêm ảnh (còn ${fbPhotos.length - fbShown})`;
+  }
   function renderFeedback() {
-    const photos = feedback.filter((f) => f.imgs.length), reviews = feedback.filter((f) => f.text);
-    $('fbReviews').innerHTML = reviews.map((f) => `<div class="rv"><div class="stars" aria-label="${f.stars} sao">${'★'.repeat(f.stars)}${'☆'.repeat(5 - f.stars)}</div><p>${esc(f.text)}</p><b>${esc(f.name || 'Khách hàng Aurelia')}</b></div>`).join('');
-    $('fbGrid').innerHTML = photos.flatMap((f) => f.imgs).map((u) => `<img src="${esc(u)}" alt="Feedback của khách" loading="lazy" data-light="${esc(u)}">`).join('');
+    const reviews = feedback.filter((f) => f.text);
+    fbPhotos = feedback.filter((f) => !f.text).flatMap((f) => f.imgs);
+    $('fbReviews').innerHTML = reviews.map((f) => `<div class="rv"><div class="stars" aria-label="${f.stars} sao">${'★'.repeat(f.stars)}${'☆'.repeat(5 - f.stars)}</div><p>${esc(f.text)}</p><b>${esc(f.name || 'Khách hàng Aurelia')}</b>${f.imgs.length ? `<div class="rv-imgs">${f.imgs.map(fbImg).join('')}</div>` : ''}</div>`).join('');
     $('fbEmpty').hidden = feedback.length > 0;
-    document.querySelectorAll('#fbReviews').forEach((e) => (e.previousElementSibling.hidden = !reviews.length));
-    $('fbGrid').previousElementSibling.hidden = !photos.length;
-    const strip = photos.flatMap((f) => f.imgs).slice(0, 4);
+    $('fbReviews').previousElementSibling.hidden = !reviews.length;
+    $('fbGrid').previousElementSibling.hidden = !fbPhotos.length;
+    $('fbGrid').innerHTML = ''; fbShown = 0; moreFeedback();
+    const strip = fbPhotos.slice(0, 4);
     $('fbStrip').innerHTML = strip.map((u) => `<button class="blob-s" style="background-image:url('${esc(u)}')" data-light="${esc(u)}" aria-label="Xem ảnh feedback"></button>`).join('');
     document.querySelector('.fb-teaser').hidden = !strip.length;
   }
+  $('fbMore').addEventListener('click', moreFeedback);
   document.addEventListener('click', (e) => { const l = e.target.closest('[data-light]'); if (l) { $('lightImg').src = l.dataset.light; $('lightDlg').showModal(); } });
 
   /* ---------- Chuyển trang (Trang chủ / Feedback) ---------- */
   function route() {
     const h = location.hash.replace('#', '') || 'trang-chu';
     const fb = h === 'feedback', bk = h === 'dat-lich', ru = h === 'quy-dinh';
-    $('viewHome').hidden = fb || bk || ru; $('viewFeedback').hidden = !fb; $('viewBook').hidden = !bk; $('viewRules').hidden = !ru;
-    const sub = fb ? 'feedback' : bk ? 'book' : ru ? 'rules' : '';
+    const sm = h.match(/^bo-suu-tap(?:\/([\w-]+))?$/), shop = !!sm;
+    $('viewShop').hidden = !shop;
+    if (shop) { F.cat = catById(sm[1]) ? sm[1] : ''; if (products.length) { buildCats(); renderGrid(); } }
+    $('viewShop').hidden = !shop;
+    $('viewHome').hidden = fb || bk || ru || shop; $('viewFeedback').hidden = !fb; $('viewBook').hidden = !bk; $('viewRules').hidden = !ru;
+    const sub = fb ? 'feedback' : bk ? 'book' : ru ? 'rules' : shop ? 'shop' : '';
     document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('on', sub ? a.dataset.view === sub : a.getAttribute('href') === '#' + h));
     if (sub) window.scrollTo(0, 0);
     else { const el = document.getElementById(h); if (el) setTimeout(() => el.scrollIntoView(), 30); }
@@ -419,7 +463,7 @@
   function observeReveal() {
     const els = document.querySelectorAll('.reveal:not(.in)');
     if (!('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return; }
-    io = io || new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: 0.12 });
+    io = io || new IntersectionObserver((ents) => ents.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: 0, rootMargin: '0px 0px 250px 0px' });
     els.forEach((e) => io.observe(e));
   }
 
@@ -441,17 +485,26 @@
     const first = w.querySelector('.w-btn'); if (first) first.focus({ preventScroll: true });
   }
 
+  /* ---------- Không để một chữ rơi xuống dòng riêng: dính 2 chữ cuối ---------- */
+  function noOrphan() {
+    document.querySelectorAll('h1,h2,h3,.lead,.lead-s,.c-lead,.w-sub,.fit-note,.fit-free,.perks li,.rules li,.rv p,#ddDesc,.empty').forEach((el) => {
+      const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n, last = null;
+      while ((n = walk.nextNode())) if (n.nodeValue.trim()) last = n;
+      if (last) last.nodeValue = last.nodeValue.replace(/[ \t\r\n]+(\S{1,12})(\s*)$/, '\u00a0$1$2');
+    });
+  }
+
   /* ---------- Khởi động ---------- */
   fillContact(); initWelcome(); bindBooking();
   Promise.all(['sanPham', 'phuKien', 'anh', 'lich', 'feedback'].map(getTab)).then(([sp, pk, anh, lich, fb]) => {
     buildProducts(toObjects(sp), toObjects(pk), toObjects(anh));
     bookings = {};
     toObjects(lich).forEach((o) => {
-      const a = parseDay(o.tungay), b = parseDay(o.denngay || o.tungay), id = baseCode(o.masanpham || o.mavay || '');
+      const a = parseDay(o.tungay), b = parseDay(o.denngay || o.tungay), id = baseCode(o.masanpham || o.mavay || '').toUpperCase();
       if (!id || a == null || b == null) return;
       (bookings[id] = bookings[id] || []).push([Math.min(a, b), Math.max(a, b)]);
     });
     feedback = toObjects(fb).map((o) => ({ imgs: (o.anh || '').split('|').map(fixImg).filter(Boolean), name: o.ten || '', text: o.noidung || '', stars: Math.max(1, Math.min(5, +o.sao || 5)) })).filter((f) => f.imgs.length || f.text);
-    buildCats(); buildChips(); bindFilters(); renderGrid(); renderFeedback(); route();
+    buildChips(); bindFilters(); buildMenu(); buildCats(); renderGrid(); renderFeedback(); route(); noOrphan();
   }).catch((e) => { $('resultLine').textContent = 'Không tải được danh sách. Hãy mở trang qua địa chỉ web (không bấm đúp vào file).'; console.error(e); });
 })();

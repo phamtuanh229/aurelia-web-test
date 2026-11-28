@@ -24,11 +24,13 @@ window.AURELIA_CONFIG = {
     sanPham: 'SanPham',     // danh sách váy, áo dài...
     phuKien: 'PhuKien',     // phụ kiện
     anh: '',                // ảnh từng mã (Mã | Link ảnh)
-    lich: '',               // lịch đã có người thuê
+    lich: 'Lich',           // lịch đã có người thuê
     feedback: ''            // phản hồi của khách
   },
 
-  // Tên hãng gốc cần ẩn khỏi tên váy trên web (viết thêm tên hãng mới vào đây, cách nhau dấu phẩy)
+  // Mã váy lấy ảnh làm ô danh mục ở trang chủ (đổi mã là đổi ảnh)
+  anhMenu: { 'vay-dai': 'VD0003', 'vay-ngan': 'VN0009', 'ao-dai-yem': 'AD0006', 'ao-khoac': 'AK0004', 'trang-suc': 'KT0009' },
+
   anHang: [],
 
   // Số đo 3 vòng ước tính theo size chữ (dùng khi váy chưa ghi số đo). Dạng [min, max] cm.

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 
@@ -77,11 +77,16 @@
     <h1 id="wTitle">Chào <em>Nàng</em> xinh đẹp!</h1>
     <p class="w-sub">Aurelia có thể hỗ trợ gì cho Nàng?</p>
     <div class="w-choices">
-      <button type="button" class="w-btn w-1" data-go="bo-suu-tap"><span class="w-ic"><svg><use href="#hanger"/></svg></span><span>Mình muốn <b>thuê váy</b></span></button>
+      <button type="button" class="w-btn w-1" data-go="danh-muc"><span class="w-ic"><svg><use href="#hanger"/></svg></span><span>Mình muốn <b>thuê váy</b></span></button>
       <button type="button" class="w-btn w-2" data-go="dat-lich"><span class="w-ic"><svg><use href="#flw"/></svg></span><span>Mình muốn <b>đặt lịch thử váy</b> tại cửa hàng</span></button>
     </div>
     <button type="button" class="w-skip" data-go="trang-chu">Xem trang chủ trước</button>
   </div>
+</div>
+
+<div class="garden" aria-hidden="true">
+  <svg class="g g1"><use href="#cluster"/></svg><svg class="g g2"><use href="#cluster"/></svg>
+  <span class="petal q1"></span><span class="petal q2"></span><span class="petal q3"></span><span class="petal q4"></span>
 </div>
 
 <header class="top">
@@ -90,7 +95,7 @@
   </a>
   <nav id="nav" aria-label="Menu chính">
     <a href="#trang-chu" data-view="home">Trang chủ</a>
-    <a href="#bo-suu-tap" data-view="home">Bộ sưu tập</a>
+    <a href="#bo-suu-tap" data-view="shop">Bộ sưu tập</a>
     <a href="#dat-lich" data-view="book">Đặt lịch thử váy</a>
     <a href="#feedback" data-view="feedback">Feedback</a>
     <a href="#quy-dinh" data-view="rules">Quy định</a>
@@ -121,22 +126,46 @@
       </div>
     </div>
     <div class="hero-art" aria-hidden="true">
-      <div class="blob b1" style="background-image:url('img/v13-1.jpg')"></div>
-      <div class="blob b2" style="background-image:url('img/v09-1.jpg')"></div>
-      <div class="blob b3" style="background-image:url('img/v02-1.jpg')"></div>
+      <span class="arch"></span>
+      <svg class="stamp" viewBox="0 0 120 120"><defs><path id="ring" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1-88 0"/></defs><circle cx="60" cy="60" r="58" fill="#fffaf3" opacity=".94"/><text><textPath href="#ring" textLength="270">AURELIA DRESS UP · SINCE 2024 ·</textPath></text><use href="#flw" x="38" y="38" width="44" height="44" style="color:#eec6c6"/></svg>
+      <svg class="bloom bl1"><use href="#flw"/></svg><svg class="bloom bl2"><use href="#rose"/></svg><svg class="bloom bl3"><use href="#flw"/></svg>
+      <div class="blob b1" style="background-image:url('img/hero3.jpg')"></div>
+      <div class="blob b2" style="background-image:url('img/hero2.jpg')"></div>
+      <div class="blob b3" style="background-image:url('img/hero1.jpg')"></div>
       <svg class="leaf leaf-r" aria-hidden="true"><use href="#leaf"/></svg>
     </div>
   </section>
 
-  <section class="collection" id="bo-suu-tap">
+  <div class="ribbon" aria-hidden="true"><div class="ribbon-run">
+    <span>Váy thiết kế chính hãng</span><svg><use href="#flw"/></svg><span>Chỉnh sửa theo số đo miễn phí</span><svg><use href="#flw"/></svg><span>Ưu đãi thuê phụ kiện</span><svg><use href="#flw"/></svg><span>Bảo quản kỹ lưỡng</span><svg><use href="#flw"/></svg>
+    <span>Váy thiết kế chính hãng</span><svg><use href="#flw"/></svg><span>Chỉnh sửa theo số đo miễn phí</span><svg><use href="#flw"/></svg><span>Ưu đãi thuê phụ kiện</span><svg><use href="#flw"/></svg><span>Bảo quản kỹ lưỡng</span><svg><use href="#flw"/></svg>
+  </div></div>
+
+  <section class="menu-sec" id="danh-muc">
     <p class="eyebrow center">Bộ sưu tập</p>
-    <h2 class="sec-title">Chọn váy cho ngày của bạn</h2>
+    <h2 class="sec-title">Hôm nay Nàng tìm&nbsp;gì?</h2>
+    <div class="menu-grid" id="menuGrid"></div>
+    <p class="center"><a class="btn btn-ghost" href="#bo-suu-tap">Xem tất cả&nbsp;mẫu</a></p>
+  </section>
+  <section class="fb-teaser">
+    <p class="eyebrow center">Khách nói gì</p>
+    <h2 class="sec-title">Những khoảnh khắc đẹp cùng Aurelia</h2>
+    <div class="fb-strip" id="fbStrip"></div>
+    <p class="center"><a class="btn btn-ghost" href="#feedback">Xem tất cả feedback</a></p>
+  </section>
+</main>
+
+<!-- ============ BỘ SƯU TẬP ============ -->
+<main id="viewShop" hidden>
+  <section class="collection">
+    <p class="eyebrow center"><a href="#danh-muc">Bộ sưu tập</a></p>
+    <h1 class="sec-title" id="shopTitle">Tất cả mẫu</h1>
 
     <div class="cats" id="cats" role="tablist" aria-label="Nhóm sản phẩm"></div>
 
     <a class="book-banner" href="#dat-lich">
       <svg><use href="#flw"/></svg>
-      <span><b>Đặt lịch thử váy</b><small>Ghé cửa hàng thử váy cùng Aurelia – nhập số đo để được gợi ý mẫu vừa với Nàng</small></span>
+      <span><b>Đặt lịch thử váy</b><small>Ghé cửa hàng thử váy cùng Aurelia, thợ của cửa hàng chỉnh theo số đo của&nbsp;Nàng</small></span>
       <i>→</i>
     </a>
 
@@ -145,31 +174,16 @@
         <label for="fFrom">Ngày cần thuê</label>
         <div class="f-dates"><input type="date" id="fFrom" aria-label="Từ ngày"><span>→</span><input type="date" id="fTo" aria-label="Đến ngày"></div>
       </div>
-      <div class="f-group"><label>Size</label><div class="chips" id="fSize"></div></div>
-      <div class="f-group"><label>Màu</label><div class="chips" id="fColor"></div></div>
-      <div class="f-group">
-        <label for="fPrice">Giá thuê 24h</label>
-        <select id="fPrice">
-          <option value="">Mọi mức giá</option>
-          <option value="0-250">Dưới 250.000đ</option>
-          <option value="250-350">250.000đ – 350.000đ</option>
-          <option value="350-9999">Trên 350.000đ</option>
-        </select>
-      </div>
+      <div class="f-group" id="gSize"><label>Size</label><div class="chips" id="fSize"></div></div>
+      <div class="f-group" id="gColor"><label>Màu</label><div class="chips" id="fColor"></div></div>
+      <div class="f-group"><label>Mức giá thuê 24h</label><div class="chips" id="fPrice"></div></div>
       <div class="f-group f-search"><label for="fQ">Tìm</label><input type="search" id="fQ" placeholder="Mã váy, kiểu, màu…"></div>
       <button class="btn btn-ghost btn-sm" id="fReset" type="button">Xoá bộ lọc</button>
     </div>
 
     <p class="result-line" id="resultLine" aria-live="polite">Đang tải danh sách váy…</p>
     <div class="grid" id="grid"></div>
-    <p class="empty" id="empty" hidden>Chưa có mẫu phù hợp. Thử đổi ngày hoặc bỏ bớt bộ lọc nhé.</p>
-  </section>
-
-  <section class="fb-teaser">
-    <p class="eyebrow center">Khách nói gì</p>
-    <h2 class="sec-title">Những khoảnh khắc đẹp cùng Aurelia</h2>
-    <div class="fb-strip" id="fbStrip"></div>
-    <p class="center"><a class="btn btn-ghost" href="#feedback">Xem tất cả feedback</a></p>
+    <p class="empty" id="empty" hidden>Chưa có mẫu phù hợp. Nàng thử đổi ngày hoặc bớt bộ lọc&nbsp;nhé.</p>
   </section>
 </main>
 
@@ -218,7 +232,7 @@
           <button class="btn btn-primary" id="bSend" type="button">Gửi lịch hẹn qua Messenger</button>
           <a class="btn btn-ghost" href="#bo-suu-tap" id="bSee">Xem bộ sưu tập</a>
         </div>
-        <p class="fit-note">Bấm gửi, tin nhắn được chép sẵn – Nàng chỉ cần dán vào Messenger. Lịch chỉ chính thức khi Aurelia xác nhận lại.</p>
+        <p class="fit-note">Bấm gửi để xem tin nhắn soạn sẵn và mở Messenger. Lịch chỉ chính thức khi Aurelia xác nhận lại.</p>
       </form>
 
       <aside class="book-side">
@@ -244,12 +258,12 @@
     <h1 class="sec-title big">Quy định <em>thuê đồ</em></h1>
     <p class="center lead-s">Để đảm bảo chất lượng dịch vụ và nâng cao trải nghiệm khách hàng, Aurelia rất mong quý khách đọc thật kỹ nội dung dưới đây.</p>
     <div class="rules">
-      <article class="rule reveal"><h2><i>A</i>Đặt lịch thuê</h2><ol>
+      <article class="rcard reveal"><h2><i>A</i>Đặt lịch thuê</h2><ol>
         <li>Thời gian thuê được tính tròn 24 giờ kể từ thời điểm khách hàng nhận đồ.</li>
         <li>Quý khách đặt lịch thuê vui lòng thanh toán toàn bộ đơn hàng. Aurelia chỉ nhận giữ lịch thuê khi khách hàng đã thanh toán, không nhận giữ đồ qua thử.</li>
         <li>Trong trường hợp quý khách có nhu cầu lấy sớm/trả muộn, vui lòng thông báo trước thời gian hẹn tối thiểu 1 giờ. Aurelia sẽ xem xét hỗ trợ không thu phí tối đa 3 giờ căn cứ tình hình thực tế lịch khách thuê. Nếu quá 3 giờ, phụ phí trả muộn sẽ được tính dựa trên tình hình thực tế và được thống nhất với khách hàng. Nếu quá 6 giờ, sẽ tính thành 1 ngày thuê.</li>
         <li>Trong trường hợp quý khách trả muộn không thông báo trước, Aurelia sẽ thu phí trả muộn 70.000 - 200.000 đồng tùy thuộc số lượng và giá trị đơn hàng. Nếu ảnh hưởng tới lịch của khách thuê sau, sẽ chịu phí đền bù bằng 100% giá trị đơn hàng của khách thuê đó.</li></ol></article>
-      <article class="rule reveal"><h2><i>B</i>Thay đổi đơn hàng</h2><ol>
+      <article class="rcard reveal"><h2><i>B</i>Thay đổi đơn hàng</h2><ol>
         <li>Đổi mẫu: Aurelia hỗ trợ đổi mẫu không thu phí 1 lần trước ngày đặt lịch tối thiểu 1 ngày (24 giờ) căn cứ tình hình thực tế mẫu tại cửa hàng. Giá trị đơn hàng sẽ được điều chỉnh theo mẫu xác nhận cuối cùng.</li>
         <li>Đổi lịch thuê: Aurelia hỗ trợ đổi lịch không thu phí 1 lần trước ngày đặt lịch tối thiểu 3 ngày (72 giờ) căn cứ tình hình thực tế mẫu tại cửa hàng. Thời gian đổi lịch thuê không quá 60 ngày.</li>
         <li>Hủy lịch thuê:<ul>
@@ -257,16 +271,16 @@
           <li>Khách hàng hủy trước 3-7 ngày: Thu phí hủy bằng 30% giá trị đơn hàng.</li>
           <li>Khách hàng hủy trước 1-3 ngày: Thu phí hủy bằng 70% giá trị đơn hàng.</li>
           <li>Khách hàng hủy trong 24 giờ trước giờ lịch hẹn: Thu phí hủy bằng toàn bộ đơn hàng.</li></ul></li></ol></article>
-      <article class="rule reveal"><h2><i>C</i>Đặt cọc lấy đồ</h2><ol>
+      <article class="rcard reveal"><h2><i>C</i>Đặt cọc lấy đồ</h2><ol>
         <li>Trước khi lấy đồ, quý khách vui lòng đặt cọc một khoản phí tương đương với giá trị trang phục và công bảo dưỡng tối thiểu 1.000.000 đồng đối với váy/áo dài và 200.000 đồng đối với túi/giày.</li>
         <li>Tiền cọc sẽ được hoàn trả sau khi đơn hàng hoàn tất.</li></ol></article>
-      <article class="rule reveal"><h2><i>D</i>Bảo quản đồ</h2><ol>
+      <article class="rcard reveal"><h2><i>D</i>Bảo quản đồ</h2><ol>
         <li>Aurelia đã kiểm tra kỹ lưỡng tình trạng trang phục trước khi giao tới tay khách hàng. Quý khách vui lòng kiểm tra thật kĩ trước khi rời khỏi cửa hàng hoặc khi nhận đồ. Nếu có lỗi hoặc thiếu đồ, quay video hoặc chụp ảnh và báo lại cửa hàng ngay trong vòng 1 giờ. Sau thời gian trên, Aurelia không chịu trách nhiệm.</li>
         <li>Trong quá trình sử dụng, quý khách vui lòng bảo quản và giữ gìn đồ. Nếu phát sinh rách, hỏng, sờn vai, lem màu, sai khác thiết kế ban đầu (kiểu dáng, trang trí, dính bẩn, sờn vai,....), cửa hàng sẽ hỗ trợ mang đi sửa chữa và khách hàng chi trả chi phí sửa chữa tùy tình trạng thực tế. Trường hợp không thể khắc phục được, sẽ chịu phí đền bù bằng giá trị thanh lý trang phục/phụ kiện.</li></ol></article>
-      <article class="rule reveal"><h2><i>E</i>Gửi trả đồ</h2><ol>
+      <article class="rcard reveal"><h2><i>E</i>Gửi trả đồ</h2><ol>
         <li>Khách hàng gửi trả lại đồ đóng gói trong tình trạng đồ khô ráo, không ẩm ướt và giữ nguyên vẹn set bảo quản bao gồm túi bọc, móc treo, túi vải đựng giày, túi zip.</li>
         <li>Trường hợp khách hàng làm hỏng hoặc mất set bảo quản, sẽ chịu phí đền bù 50.000 đồng/set.</li></ol></article>
-      <article class="rule reveal"><h2><i>F</i>Vận chuyển</h2><ol>
+      <article class="rcard reveal"><h2><i>F</i>Vận chuyển</h2><ol>
         <li>Quý khách thanh toán phí vận chuyển 2 chiều.</li>
         <li>Lựa chọn hình thức giao hàng:<ul>
           <li>Quý khách chủ động đặt giao hàng và báo cho Aurelia thông tin chính xác để tránh rủi ro thất lạc đồ.</li>
@@ -281,13 +295,15 @@
   <section class="fb-page">
     <p class="eyebrow center">Feedback</p>
     <h1 class="sec-title big">Khách nói gì về <em>Aurelia</em></h1>
-    <p class="center lead-s">Hình ảnh khách đã thuê và đánh giá thật trên Google Maps.</p>
+    <p class="center lead-s">Đánh giá thật trên Google Maps và ảnh thật của khách mặc trang phục Aurelia.</p>
+    <p class="center rating"><span class="stars" aria-hidden="true">★★★★★</span> <b>5,0</b> · 41 đánh giá trên Google (tính đến 28/11/2026)</p>
     <p class="center"><a class="btn btn-primary btn-sm" id="fbMaps" target="_blank" rel="noopener">Xem đánh giá trên Google Maps</a></p>
-    <h2 class="sub">Đánh giá</h2>
+    <h2 class="sub center">Đánh giá trên Google</h2>
     <div class="reviews" id="fbReviews"></div>
-    <h2 class="sub">Hình ảnh khách thuê</h2>
+    <h2 class="sub center">Ảnh thật của Nàng và Aurelia</h2>
     <div class="fb-grid" id="fbGrid"></div>
-    <p class="empty" id="fbEmpty" hidden>Phản hồi của khách đang được cập nhật. Mời bạn quay lại sau nhé!</p>
+    <p class="center"><button type="button" class="btn btn-ghost" id="fbMore" hidden>Xem thêm ảnh</button></p>
+    <p class="empty" id="fbEmpty" hidden>Phản hồi của khách đang được cập nhật. Mời Nàng quay lại sau&nbsp;nhé!</p>
   </section>
 </main>
 
@@ -296,7 +312,7 @@
 <section class="contact" id="lien-he">
   <div class="contact-in">
     <div>
-      <h2>Cùng chọn <em>chiếc váy hoàn hảo</em> nhé!</h2>
+      <h2>Cùng chọn <em>chiếc váy hoàn&nbsp;hảo&nbsp;nhé!</em></h2>
       <p class="c-lead">Nhắn Aurelia để giữ váy, hỏi size hoặc đặt lịch ghé thử.</p>
       <div class="c-btns">
         <a class="btn btn-light" id="cMsg" target="_blank" rel="noopener">Nhắn Messenger</a>
@@ -316,7 +332,6 @@
 <footer>
   <img src="logo.png" alt="" width="56" height="56" class="f-logo">
   <p>© Aurelia Dress Up · Cho thuê trang phục thiết kế tại Hà Nội</p>
-  <p class="f-small">Ảnh sản phẩm thuộc về Aurelia Dress Up. Vui lòng không sao chép.</p>
 </footer>
 
 <!-- Chi tiết sản phẩm -->
@@ -336,7 +351,7 @@
 
       <div class="dd-fit" id="ddFit">
         <h3>Nàng cần tư vấn size?</h3>
-        <p class="fit-note">Nhập số đo (không bắt buộc) rồi gặp nhân viên – Aurelia chỉnh váy theo số đo của Nàng.</p>
+        <p class="fit-note">Cho chúng mình chút thông tin, Aurelia sẽ tư vấn ngay!</p>
         <div class="fit-grid small">
           <label>Cao (cm)<input type="number" inputmode="numeric" id="dH" placeholder="160"></label>
           <label>Nặng (kg)<input type="number" inputmode="numeric" id="dW" placeholder="50"></label>
@@ -345,6 +360,7 @@
           <label>Mông<input type="number" inputmode="numeric" id="dHi" placeholder="92"></label>
         </div>
         <button class="btn btn-ghost btn-sm" id="ddAsk" type="button">Gặp nhân viên tư vấn</button>
+        <p class="fit-free"><em>Aurelia có thợ lành nghề hỗ trợ chỉnh sửa bóp/nới theo số đo yêu cầu miễn phí.</em></p>
       </div>
 
       <h3 class="cal-title">Lịch trống</h3>
@@ -352,7 +368,7 @@
         <div class="cal-head"><button type="button" id="calPrev" aria-label="Tháng trước">‹</button><b id="calMonth"></b><button type="button" id="calNext" aria-label="Tháng sau">›</button></div>
         <div class="cal-dow"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
         <div class="cal-grid" id="calGrid"></div>
-        <div class="cal-legend"><i class="lg free"></i>Trống <i class="lg busy"></i>Đã có người thuê <i class="lg sel"></i>Bạn chọn</div>
+        <div class="cal-legend"><i class="lg free"></i>Trống <i class="lg busy"></i>Đã có người thuê <i class="lg sel"></i>Nàng chọn</div>
       </div>
       <p class="cal-status" id="calStatus" aria-live="polite">Bấm ngày nhận, rồi bấm ngày trả.</p>
 
@@ -370,10 +386,21 @@
   <img id="lightImg" alt="">
 </dialog>
 
+<!-- Tin nhắn soạn sẵn -->
+<dialog id="msgDlg" aria-labelledby="msgTitle">
+  <button class="x" id="msgClose" type="button" aria-label="Đóng">×</button>
+  <div class="msg">
+    <h2 id="msgTitle">Tin nhắn của Nàng</h2>
+    <textarea id="msgText" rows="8" aria-label="Nội dung tin nhắn"></textarea>
+    <a class="btn btn-primary" id="msgGo" target="_blank" rel="noopener">Chép tin nhắn &amp; mở Messenger</a>
+    <p class="fit-note">Nếu ô chat chưa có sẵn nội dung, Nàng chỉ cần <b>dán</b> (nhấn giữ → Dán, hoặc Ctrl + V) rồi bấm gửi nhé.</p>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="config.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="config.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
 
